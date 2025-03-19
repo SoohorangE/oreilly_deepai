@@ -1,28 +1,43 @@
 import tensorflow as tf
 
+from keras_preprocessing.image import ImageDataGenerator
 from tensorflow.keras.optimizers import RMSprop
 
-import joblib
-
+import numpy as np
 
 training_dir = "horse-or-human/training/"
 validation_dir = "horse-or-human/validation/"
 
-train_ds = tf.keras.utils.image_dataset_from_directory(
+train_datagen = ImageDataGenerator(
+    rescale=1./255,
+    rotation_range=40,
+    width_shift_range=0.2,
+    height_shift_range=0.2,
+    shear_range=0.2,
+    zoom_range=0.2,
+    horizontal_flip=True,
+    fill_mode='nearest'
+)
+train_ds = train_datagen.flow_from_directory(
     training_dir,
-    image_size=(300, 300),
-    label_mode="binary"
+    target_size=(300, 300),
+    class_mode="binary"
 )
 
-valid_ds = tf.keras.utils.image_dataset_from_directory(
+print(train_ds.class_indices)
+
+valid_datagen = ImageDataGenerator(rescale=1./255)
+
+valid_ds = valid_datagen.flow_from_directory(
     validation_dir,
-    image_size=(300, 300),
-    label_mode="binary"
+    target_size=(300, 300),
+    class_mode="binary"
 )
+
+print(valid_ds.class_indices)
 
 model = tf.keras.models.Sequential([
-    tf.keras.layers.Rescaling(1./255, input_shape=(300, 300, 3)),
-    tf.keras.layers.Conv2D(16, (3,3), activation='relu'),
+    tf.keras.layers.Conv2D(16, (3,3), activation='relu', input_shape=(300, 300, 3)),
     tf.keras.layers.MaxPooling2D(pool_size=(2,2)),
     tf.keras.layers.Conv2D(32, (3,3), activation='relu'),
     tf.keras.layers.MaxPooling2D(pool_size=(2,2)),
@@ -43,5 +58,5 @@ model.compile(loss='binary_crossentropy',
 
 model.summary()
 model.fit(train_ds, epochs=15, validation_data=valid_ds)
+model.save("horse-or-human.keras")
 
-joblib.dump(model, './horse-training.pkl')
