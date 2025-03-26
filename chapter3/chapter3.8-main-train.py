@@ -22,7 +22,7 @@ train_datagen = ImageDataGenerator(
 
 train_generator = train_datagen.flow_from_directory(
     directory=train_dir,
-    target_size=(300, 300),
+    target_size=(150, 150),
     class_mode='categorical'
 )
 
@@ -30,12 +30,12 @@ train_generator = train_datagen.flow_from_directory(
 valid_datagen = ImageDataGenerator(rescale=1./255)
 valid_generator = valid_datagen.flow_from_directory(
     directory=valid_dir,
-    target_size=(300, 300),
+    target_size=(150, 150),
     class_mode='categorical'
 )
 
 model = Sequential([
-    Conv2D(64, (3, 3), activation='relu', input_shape=(300, 300, 3)),
+    Conv2D(64, (3, 3), activation='relu', input_shape=(150, 150, 3)),
     MaxPooling2D(pool_size=(2, 2)),
     Conv2D(64, (3, 3), activation='relu'),
     MaxPooling2D(pool_size=(2, 2)),

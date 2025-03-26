@@ -31,7 +31,7 @@ for fn in sample_images:
     plt.imshow(mpimg.imread(fn))
     plt.show()
 
-    img = tf.keras.utils.load_img(fn, target_size=(300, 300))
+    img = tf.keras.utils.load_img(fn, target_size=(150, 150))
     x = tf.keras.utils.img_to_array(img)
     x = np.expand_dims(x, axis=0)
     x /= 255.0
