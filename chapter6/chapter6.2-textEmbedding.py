@@ -1,9 +1,18 @@
 import json
 import tensorflow as tf
+from keras import Sequential
 
 from keras.preprocessing.text import Tokenizer
 from bs4 import BeautifulSoup
 from keras_preprocessing.sequence import pad_sequences
+from tensorflow.keras.layers import Embedding, GlobalAveragePooling1D, Dense
+
+import numpy as np
+
+from tb import TensorBoard, make_TensorBoard
+
+dir_name = "log_deepai"
+TensorB = make_TensorBoard(dir_name)
 
 sentences = []
 labels = []
@@ -24,7 +33,7 @@ stopwords = ["a", "about", "above", "after", "again", "against", "all", "am", "a
              "whys", "with", "would", "you", "youd", "youll", "youre", "youve", "your", "yours", "yourself",
              "yourselves"]
 
-with open('../Sarcasm_Headlines_Dataset.json', 'r') as f:
+with open('Sarcasm_Headlines_Dataset.json', 'r') as f:
     datastore = json.load(f)
     for item in datastore:
         sentence = item['headline'].lower()
@@ -68,4 +77,28 @@ word_index = tokenizer.word_index
 training_sequences = tokenizer.texts_to_sequences(training_sentences)
 training_padded = pad_sequences(training_sequences, maxlen=max_length,
                                 padding=padding_type, truncating=trunc_type)
+
+test_sequences = tokenizer.texts_to_sequences(test_sentences)
+test_padded = pad_sequences(test_sequences, maxlen=max_length,
+                            padding=padding_type, truncating=trunc_type)
+
+training_padded = np.array(training_padded)
+training_labels = np.array(training_labels)
+test_padded = np.array(test_padded)
+test_labels = np.array(test_labels)
+
+model = Sequential([
+    Embedding(10000, 16),
+    GlobalAveragePooling1D(),
+    Dense(24, activation="relu"),
+    Dense(1, activation="sigmoid"),
+])
+
+model.compile(loss="binary_crossentropy", optimizer="adam", metrics=["accuracy"])
+model.summary()
+
+model.fit(training_padded, training_labels, epochs=30, validation_data=(test_padded, test_labels), callbacks=[TensorB])
+
+
+
 
